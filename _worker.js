@@ -989,7 +989,6 @@ const getFragmentConfigs = async (env, hostName, client) => {
         blockAds,
         bypassIran, 
         cleanIPs,
-	proxyIPs,
         outProxy,
         outProxyParams
     } = proxySettings;
@@ -1187,7 +1186,6 @@ const updateDataset = async (env, Settings) => {
         blockAds: Settings?.get('block-ads') || false,
         bypassIran: Settings?.get('bypass-iran') || false,
         cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || '',
-	proxyIPs: Settings?.get('proxyIPs')?.replaceAll(' ', '') || '',
         outProxy: vlessConfig || '',
         outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : ''
     };
@@ -1322,7 +1320,6 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
         blockAds,
         bypassIran,
         cleanIPs,
-	proxyIPs,
         outProxy
     } = proxySettings;
 
@@ -1609,11 +1606,6 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 					<label for="cleanIPs">✨ Clean IPs</label>
 					<input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
 				</div>
-    		<h2>PROXY IP ⚙️</h2>
-				<div class="form-control">
-					<label for="proxyIPs">✨ Proxy IPs</label>
-					<input type="text" id="proxyIPs" name="proxyIPs" value="${proxyIPs.replaceAll(",", " , ")}">
-				</div>
                 <div class="form-control">
                     <label>🔎 Online Scanner</label>
                     <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank">
@@ -1896,9 +1888,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const intervalMin = getValue('fragmentIntervalMin');
             const intervalMax = getValue('fragmentIntervalMax');
             const cleanIP = document.getElementById('cleanIPs');
-	    const proxyIP = document.getElementById('proxyIPs');
             const cleanIPs = cleanIP.value?.split(',');
-	    const proxyIPs = proxyIP.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value?.trim();                    
             const formData = new FormData(configForm);
             const isVless = /vless:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
