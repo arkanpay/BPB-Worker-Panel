@@ -11,7 +11,16 @@ let userID = '89b3cbba-e6ac-485a-9481-976a0415eab9';
 
 // https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/
 // https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/
-const proxyIPs= ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
+try {
+	proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+} catch (error) {
+	console.log(error);
+	throw new Error(`An error occurred while getting normal configs - ${error}`);
+}
+
+const { proxyIPs } = proxySettings;
+
+//const proxyIPs= ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
 
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
@@ -987,6 +996,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         blockAds,
         bypassIran, 
         cleanIPs,
+	proxyIPs,
         outProxy,
         outProxyParams
     } = proxySettings;
@@ -1184,6 +1194,7 @@ const updateDataset = async (env, Settings) => {
         blockAds: Settings?.get('block-ads') || false,
         bypassIran: Settings?.get('bypass-iran') || false,
         cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || '',
+	proxyIPs: Settings?.get('proxyIPs')?.replaceAll(' ', '') || '',
         outProxy: vlessConfig || '',
         outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : ''
     };
@@ -1318,6 +1329,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
         blockAds,
         bypassIran,
         cleanIPs,
+	proxyIPs,
         outProxy
     } = proxySettings;
 
@@ -1604,6 +1616,11 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 					<label for="cleanIPs">✨ Clean IPs</label>
 					<input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
 				</div>
+    		<h2>PROXY IP ⚙️</h2>
+				<div class="form-control">
+					<label for="proxyIPs">✨ Proxy IPs</label>
+					<input type="text" id="proxyIPs" name="proxyIPs" value="${proxyIPs.replaceAll(",", " , ")}">
+				</div>
                 <div class="form-control">
                     <label>🔎 Online Scanner</label>
                     <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank">
@@ -1886,7 +1903,9 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const intervalMin = getValue('fragmentIntervalMin');
             const intervalMax = getValue('fragmentIntervalMax');
             const cleanIP = document.getElementById('cleanIPs');
+	    const proxyIP = document.getElementById('proxyIPs');
             const cleanIPs = cleanIP.value?.split(',');
+	    const proxyIPs = proxyIP.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value?.trim();                    
             const formData = new FormData(configForm);
             const isVless = /vless:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
