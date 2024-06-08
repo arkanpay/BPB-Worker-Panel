@@ -37,7 +37,7 @@ export default {
 		throw new Error(`An error occurred while getting normal configs - ${error}`);
 	}
 	
-	const { proxyIPs } = proxySettings;
+	const { proxyIPs } = proxySettings || [];
 	
 	//const proxyIPs= ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
 	
