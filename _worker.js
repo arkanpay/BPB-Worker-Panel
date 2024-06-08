@@ -29,6 +29,7 @@ export default {
      * @returns {Promise<Response>}
      */
     async fetch(request, env, ctx) {
+	let proxySettings = {};
 	try {
 		proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
 	} catch (error) {
