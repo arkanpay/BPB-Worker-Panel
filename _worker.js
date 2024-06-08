@@ -11,8 +11,13 @@ let userID = '89b3cbba-e6ac-485a-9481-976a0415eab9';
 
 // https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/
 // https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/
+	
+const { proxyIPs } = proxySettings || [];
 
+const proxyIPs= ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
 
+let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];    
+let proxyIP = "212.192.9.26"
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 
 let panelVersion = '2.3.4';
@@ -29,19 +34,7 @@ export default {
      * @returns {Promise<Response>}
      */
     async fetch(request, env, ctx) {
-	let proxySettings = {};
-	try {
-		proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
-	} catch (error) {
-		console.log(error);
-		throw new Error(`An error occurred while getting normal configs - ${error}`);
-	}
-	
-	const { proxyIPs } = proxySettings || [];
-	
-	//const proxyIPs= ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
-	
-	let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];    
+
         try {
             
             userID = env.UUID || userID;
