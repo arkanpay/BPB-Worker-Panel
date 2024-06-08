@@ -212,6 +212,12 @@ export default {
  * @returns {Promise<Response>} A Promise that resolves to a WebSocket response object.
  */
 async function vlessOverWSHandler(request) {
+	const url = new URL(request.url);
+	if (url.pathname.includes('pip=')){
+		proxyIP = url.pathname
+		proxyIP = proxyIP.substring(5);
+	}
+	url.pathname = "/?ed=2560";
 	const webSocketPair = new WebSocketPair();
 	const [client, webSocket] = Object.values(webSocketPair);
 	webSocket.accept();
