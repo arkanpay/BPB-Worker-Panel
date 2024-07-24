@@ -784,10 +784,12 @@ const getNormalConfigs = async (env, hostName, client) => {
     }
 
     const { cleanIPs } = proxySettings;
+	const { cleanIPsAmazon } = proxySettings;
     const resolved = await resolveDNS(hostName);
     const Addresses = [
        // hostName,
-        ...(cleanIPs ? cleanIPs.split(',') : [])//,
+        ...(cleanIPs ? cleanIPs.split(',') : []),
+		...(cleanIPsAmazon ? cleanIPsAmazon.split(',') : [])
       //  ...resolved.ipv4,
        // ...resolved.ipv6.map((ip) => `[${ip}]`),
     ];
@@ -795,18 +797,30 @@ const getNormalConfigs = async (env, hostName, client) => {
 	const ports = [443, 2053, 2083, 2087, 2096, 8443];
 
 	Addresses.forEach((addr) => {
-	    ports.forEach((port) => {
-	        let remark = `BPB - ${addr}:${port}`;
-	        remark = remark.length <= 30 ? remark : `${remark.slice(0, 29)}...`;
-	
-	        vlessWsTls += `vless://${userID}@${addr}:${port}?encryption=none&security=tls&type=ws&host=${
-	            randomUpperCase(hostName)
-	        }&sni=${
-	            randomUpperCase(hostName)
-	        }&fp=randomized&alpn=http/1.1&path=${
-	            encodeURIComponent(`/${getRandomPath(16)}?ed=2560`)
-	        }#${encodeURIComponent(remark)}\n`;
-	    });
+		if (cleanIPsAmazon && cleanIPsAmazon.includes(addr)) {
+			// Only use port 443 for addresses in cleanIPsAmazon
+			const port = 443;
+			let remark = `BPB - ${addr}:${port}`;
+			remark = remark.length <= 30 ? remark : `${remark.slice(0, 29)}...`;
+
+			vlessWsTls += `vless://${userID}@${addr}:${port}?encryption=none&security=tls&type=ws&host=${
+				randomUpperCase(hostName)
+			}&sni=${randomUpperCase(hostName)}&fp=randomized&alpn=http/1.1&path=${
+				encodeURIComponent(`/${getRandomPath(16)}?ed=2560`)
+			}#${encodeURIComponent(remark)}\n`;
+		} else {
+			// Use other ports for non-cleanIPsAmazon addresses
+			ports.forEach((port) => {
+				let remark = `BPB - ${addr}:${port}`;
+				remark = remark.length <= 30 ? remark : `${remark.slice(0, 29)}...`;
+
+				vlessWsTls += `vless://${userID}@${addr}:${port}?encryption=none&security=tls&type=ws&host=${
+					randomUpperCase(hostName)
+				}&sni=${randomUpperCase(hostName)}&fp=randomized&alpn=http/1.1&path=${
+					encodeURIComponent(`/${getRandomPath(16)}?ed=2560`)
+				}#${encodeURIComponent(remark)}\n`;
+			});
+		}
 	});
 
 
@@ -989,6 +1003,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         blockAds,
         bypassIran, 
         cleanIPs,
+		cleanIPsAmazon,
         outProxy,
         outProxyParams
     } = proxySettings;
@@ -998,6 +1013,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         hostName,
         "www.speedtest.net",
         ...(cleanIPs ? cleanIPs.split(",") : []),
+		    ...(cleanIPsAmazon ? cleanIPsAmazon.split(",") : []),
         ...resolved.ipv4,
         ...resolved.ipv6.map((ip) => `[${ip}]`),
     ];
@@ -1143,7 +1159,7 @@ const getSingboxConfig = async (env, hostName) => {
         throw new Error(`An error occurred while getting sing-box configs - ${error}`);
     }
 
-    const { remoteDNS,  localDNS, cleanIPs } = proxySettings
+    const { remoteDNS,  localDNS, cleanIPs, cleanIPsAmazon } = proxySettings
     let config = structuredClone(singboxConfigTemp);
     config.dns.servers[0].address = remoteDNS;
     config.dns.servers[1].address = localDNS;
@@ -1153,6 +1169,7 @@ const getSingboxConfig = async (env, hostName) => {
         hostName,
         "www.speedtest.net",
         ...(cleanIPs ? cleanIPs.split(",") : []),
+		...(cleanIPsAmazon ? cleanIPsAmazon.split(",") : []),
         ...resolved.ipv4,
         ...resolved.ipv6.map((ip) => `[${ip}]`),
     ];
@@ -1186,6 +1203,7 @@ const updateDataset = async (env, Settings) => {
         blockAds: Settings?.get('block-ads') || false,
         bypassIran: Settings?.get('bypass-iran') || false,
         cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || '',
+		cleanIPsAmazon: Settings?.get('cleanIPsAmazon')?.replaceAll(' ', '') || '',
         outProxy: vlessConfig || '',
         outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : ''
     };
@@ -1320,6 +1338,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
         blockAds,
         bypassIran,
         cleanIPs,
+		cleanIPsAmazon,
         outProxy
     } = proxySettings;
 
@@ -1603,8 +1622,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 				</div>
                 <h2>CLEAN IP ⚙️</h2>
 				<div class="form-control">
-					<label for="cleanIPs">✨ Clean IPs</label>
+					<label for="cleanIPs">✨ CloudFlare Clean IPs</label>
 					<input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
+					<label for="cleanIPsAmazon">✨ Other Clean IPs</label>
+					<input type="text" id="cleanIPsAmazon" name="cleanIPsAmazon" value="${cleanIPsAmazon.replaceAll(",", " , ")}">
 				</div>
                 <div class="form-control">
                     <label>🔎 Online Scanner</label>
@@ -1889,6 +1910,8 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const intervalMax = getValue('fragmentIntervalMax');
             const cleanIP = document.getElementById('cleanIPs');
             const cleanIPs = cleanIP.value?.split(',');
+			const cleanIPAmazon = document.getElementById('cleanIPsAmazon');
+			const cleanIPsAmazon = cleanIPAmazon.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value?.trim();                    
             const formData = new FormData(configForm);
             const isVless = /vless:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
@@ -1902,7 +1925,15 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                     return !/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(trimmedValue);
                 }
             });
-    
+			const invalidIPsAmazon = cleanIPsAmazon?.filter(value => {
+                if (value !== "") {
+                    const trimmedValue = value.trim();
+                    return !/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(trimmedValue);
+                }
+            });
+			
+			invalidIPs = cleanIPs.concat(cleanIPsAmazon);
+			
             if (invalidIPs.length) {
                 alert('⛔ Invalid IPs or Domains 🫤\\n\\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\\n'));
                 return false;
