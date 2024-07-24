@@ -1932,7 +1932,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 }
             });
 			
-	     invalidIPs = cleanIPs.concat(cleanIPsAmazon);
+	     invalidIPs = invalidIPs.concat(invalidIPsAmazon);
 			
             if (invalidIPs.length) {
                 alert('⛔ Invalid IPs or Domains 🫤\\n\\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\\n'));
