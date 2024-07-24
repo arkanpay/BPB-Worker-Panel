@@ -1910,8 +1910,8 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const intervalMax = getValue('fragmentIntervalMax');
             const cleanIP = document.getElementById('cleanIPs');
             const cleanIPs = cleanIP.value?.split(',');
-			const cleanIPAmazon = document.getElementById('cleanIPsAmazon');
-			const cleanIPsAmazon = cleanIPAmazon.value?.split(',');
+	    const cleanIPAmazon = document.getElementById('cleanIPsAmazon');
+	    const cleanIPsAmazon = cleanIPAmazon.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value?.trim();                    
             const formData = new FormData(configForm);
             const isVless = /vless:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
@@ -1919,20 +1919,20 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const validSecurityType = /security=(tls|none|reality)/.test(chainProxy);
             const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
 
-            const invalidIPs = cleanIPs?.filter(value => {
+            let invalidIPs = cleanIPs?.filter(value => {
                 if (value !== "") {
                     const trimmedValue = value.trim();
                     return !/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(trimmedValue);
                 }
             });
-			const invalidIPsAmazon = cleanIPsAmazon?.filter(value => {
+	    const invalidIPsAmazon = cleanIPsAmazon?.filter(value => {
                 if (value !== "") {
                     const trimmedValue = value.trim();
                     return !/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(trimmedValue);
                 }
             });
 			
-			invalidIPs = cleanIPs.concat(cleanIPsAmazon);
+	     invalidIPs = cleanIPs.concat(cleanIPsAmazon);
 			
             if (invalidIPs.length) {
                 alert('⛔ Invalid IPs or Domains 🫤\\n\\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\\n'));
