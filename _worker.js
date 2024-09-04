@@ -17,7 +17,6 @@ const proxyIPs= ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];    
 proxyIP = "212.192.9.26"
 let dohURL = 'https://cloudflare-dns.com/dns-query';
-dohURL = 'https://dns10.quad9.net/dns-query';
 
 let panelVersion = '2.3.4';
 
